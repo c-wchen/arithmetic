@@ -254,6 +254,19 @@ void MulTwoNum(char *first, char *second, char *result) {
 }
 
 /**
+ * 大整数求模
+ * @param first
+ * @param second
+ * @param result
+ */
+void ModTwoNumV2(char *first, char *second, char *result) {
+    memcpy(result, first, MAX_LEN);
+    while (CompNumStrSize(result, second) >= 0) {
+        SubPlus(result, second);
+    }
+}
+
+/**
  * 满足条件： second位数 <= 6
  * @param first
  * @param second
@@ -370,8 +383,8 @@ void Mod(DataCalc *param, char *result) {
     int32_t flag1 = CHECK_SYMBOL(param->first);
     int32_t flag2 = CHECK_SYMBOL(param->second);
     int32_t len2 = (int32_t) strnlen(RM_SYMBOL(param->second), MAX_LEN);
-    ASSERT(len2 > 6 || flag2 < 0, "TEST param mod err");
-    ModTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+//    ASSERT(len2 > 6 || flag2 < 0, "TEST param mod err");
+    ModTwoNumV2(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
 }
 
 /**
@@ -414,7 +427,7 @@ int main() {
     int32_t errCnt = 0;
     int32_t passCnt = 0;
     DataCalc param;
-    freopen("../testcase/mul.in", "r", stdin);
+    freopen("../testcase/mod_v2.in", "r", stdin);
     while (scanf("%s\n", input) != EOF) {
         memset(param.first, 0, MAX_LEN);
         memset(param.second, 0, MAX_LEN);

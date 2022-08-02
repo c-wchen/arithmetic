@@ -33,6 +33,13 @@ def gen_mod_arithmetic(start, end, num):
         op = '%'
         print("{}{}{}={}".format(str(first), op, str(second), str(first % second)))
 
+def gen_mod_arithmeticV2(start, end, num):
+    rand = Random()
+    for _ in range(num):
+        first = rand.randint(start, end)
+        second = rand.randint(start, end)
+        op = '%'
+        print("{}{}{}={}".format(str(first), op, str(second), str(first % second)))
 
 if __name__ == '__main__':
     for _ in range(10000):

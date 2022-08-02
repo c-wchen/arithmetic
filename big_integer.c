@@ -247,6 +247,7 @@ void MulTwoNum(char *first, char *second, char *result) {
     char result2[MAX_LEN] = {'\0'};
     memcpy(result2, first, MAX_LEN);
     result[0] = '0';
+    // TODO: 主要集中在被减数过大问题，可以采用减数*10的方式就行优化，有局限性，对于后期多进制不方便扩展
     while (CompNumStrSize(result2, second) >= 0) {
         SubPlus(result2, second);
         AddPlus(result, one);

@@ -13,6 +13,7 @@
 #define MAX_LEN 32
 #define MAX_RES_LEN (MAX_LEN << 1)
 #define MAX_IN_LEN (MAX_RES_LEN << 1)
+#define MAX_RESERVED_BITS 128
 
 typedef struct {
     char first[MAX_LEN];

@@ -13,7 +13,7 @@
 #define MAX_LEN 32
 #define MAX_RES_LEN (MAX_LEN << 1)
 #define MAX_IN_LEN (MAX_RES_LEN << 1)
-#define MAX_RESERVED_BITS 128
+#define MOD_TWO_NUM_INTERVAL 4
 
 typedef struct {
     char first[MAX_LEN];
@@ -242,13 +242,13 @@ void DivTwoNum(char *first, char *second, char *result) {
 }
 
 void MulTwoNum(char *first, char *second, char *result) {
-    int len2 = strlen(second);
+    int len2 = strnlen(second, MAX_LEN);
     char pow[MAX_LEN] = {'\0'};
     char result2[MAX_LEN] = {'\0'};
     char second2[MAX_LEN] = {'\0'};
     memcpy(result2, first, MAX_LEN);
     result[0] = '0';
-    int count = strlen(first) - strlen(second);
+    int count = strnlen(first, MAX_LEN) - strnlen(second, MAX_LEN);
     int num;
     while (count >= 0) {
         num = 0;
@@ -279,8 +279,18 @@ void MulTwoNum(char *first, char *second, char *result) {
  */
 void ModTwoNumV2(char *first, char *second, char *result) {
     memcpy(result, first, MAX_LEN);
-    while (CompNumStrSize(result, second) >= 0) {
-        SubPlus(result, second);
+    char second2[MAX_LEN] = {'\0'};
+    int count = strnlen(first, MAX_LEN) - strnlen(second, MAX_LEN);
+    int len2 = strnlen(second, MAX_LEN);
+    while (count >= 0) {
+        memcpy(second2, second, MAX_LEN);
+        for (int i = 0; i < count; ++i) {
+            second2[len2 + i] = '0';
+        }
+        while (CompNumStrSize(result, second2) >= 0) {
+            SubPlus(result, second2);
+        }
+        count--;
     }
 }
 
@@ -400,15 +410,17 @@ void Div(DataCalc *param, char *result) {
 void Mod(DataCalc *param, char *result) {
     int32_t flag1 = CHECK_SYMBOL(param->first);
     int32_t flag2 = CHECK_SYMBOL(param->second);
-    int32_t len2 = (int32_t) strnlen(RM_SYMBOL(param->second), MAX_LEN);
-    ASSERT(flag2 < 0, "TEST param mod err");
+    ASSERT(flag1 < 0 || flag2 < 0, "TEST param mod err");
+    ASSERT(strcmp(param->second, "0") == 0, "TEST second cannot be zero");
+    ASSERT(strcmp(param->second, "-0") == 0, "TEST second cannot be zero");
     char maxIntStr[12] = {'\0'};
     itoa(INT_MAX, maxIntStr, 10);
-    if (CompNumStrSize(RM_SYMBOL(param->second), maxIntStr) < 0) {
+    if (CompNumStrSize(RM_SYMBOL(param->second), maxIntStr) < 0 &&
+    strlen(RM_SYMBOL(param->first)) - strlen(RM_SYMBOL(param->second)) < MOD_TWO_NUM_INTERVAL) {
         ModTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
-        return;
+    } else {
+        ModTwoNumV2(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
     }
-    ModTwoNumV2(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
 }
 
 /**
@@ -444,14 +456,13 @@ void CalculateMon(DataCalc *param, char *result) {
             break;
     }
 }
-#define DEBUG 0
 int main() {
     char result[MAX_RES_LEN] = {'\0'};
     char input[MAX_IN_LEN] = {'\0'};
     int32_t errCnt = 0;
     int32_t passCnt = 0;
     DataCalc param;
-    freopen("../testcase/mul_v2.in", "r", stdin);
+    freopen("../testcase/sum.in", "r", stdin);
     while (scanf("%s\n", input) != EOF) {
         memset(param.first, 0, MAX_LEN);
         memset(param.second, 0, MAX_LEN);
@@ -466,9 +477,6 @@ int main() {
         }
         ParseInput(input, &param);
         CalculateMon(&param, result);
-#if DEBUG>0
-        printf("result %s\n", result);
-#endif
         if (strcmp(input + resIndex, result) != 0) {
             printf("EXPECT[%s] %s = (res = %s, expect = %s)\n",
                    strcmp(input + resIndex, result) == 0 ? "TRUE" : "FALSE",

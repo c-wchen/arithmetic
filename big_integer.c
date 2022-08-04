@@ -1,10 +1,7 @@
-
-#define _CRT_SECURE_NO_WARNINGS
 /**
  * 规则： 30位大数运算，其中求模最大位数6位
  */
 #include <stdio.h>
-#include <ctype.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -27,8 +24,8 @@ typedef struct {
 #define ASSERT(expr, log)                                                      \
     do  {                                                                      \
         if ((expr) > 0) {                                                      \
-        printf("%s [%s:%d]\n", log, __FUNCTION__, __LINE__);                   \
-        exit(0);                                                               \
+            printf("%s [%s:%d]\n", log, __FUNCTION__, __LINE__);               \
+            exit(0);                                                           \
         }                                                                      \
     } while(0)
 
@@ -66,7 +63,7 @@ void Reverse(char *s) {
 int32_t CompNumStrSize(const char *first, const char *second) {
     int32_t len1 = (int32_t) strnlen(first, MAX_LEN);
     int32_t len2 = (int32_t) strnlen(second, MAX_LEN);
-    int32_t flag = 0;
+    int32_t flag;
     if (len1 > len2) {
         flag = 1;
     } else if (len1 < len2) {
@@ -242,13 +239,13 @@ void DivTwoNum(char *first, char *second, char *result) {
 }
 
 void MulTwoNum(char *first, char *second, char *result) {
-    int len2 = strnlen(second, MAX_LEN);
+    int len2 = (int32_t)strnlen(second, MAX_LEN);
     char pow[MAX_LEN] = {'\0'};
     char result2[MAX_LEN] = {'\0'};
     char second2[MAX_LEN] = {'\0'};
     memcpy(result2, first, MAX_LEN);
     result[0] = '0';
-    int count = strnlen(first, MAX_LEN) - strnlen(second, MAX_LEN);
+    int count = (int32_t)strnlen(first, MAX_LEN) - (int32_t)strnlen(second, MAX_LEN);
     int num;
     while (count >= 0) {
         num = 0;
@@ -266,7 +263,7 @@ void MulTwoNum(char *first, char *second, char *result) {
         if (num == 0) {
             continue;
         }
-        pow[0] = '0' + num;
+        pow[0] = (char)('0' + num);
         AddPlus(result, pow);
     }
 }
@@ -280,8 +277,8 @@ void MulTwoNum(char *first, char *second, char *result) {
 void ModTwoNumV2(char *first, char *second, char *result) {
     memcpy(result, first, MAX_LEN);
     char second2[MAX_LEN] = {'\0'};
-    int count = strnlen(first, MAX_LEN) - strnlen(second, MAX_LEN);
-    int len2 = strnlen(second, MAX_LEN);
+    int count = (int32_t)strnlen(first, MAX_LEN) - (int32_t)strnlen(second, MAX_LEN);
+    int len2 = (int32_t)strnlen(second, MAX_LEN);
     while (count >= 0) {
         memcpy(second2, second, MAX_LEN);
         for (int i = 0; i < count; ++i) {
@@ -302,12 +299,12 @@ void ModTwoNumV2(char *first, char *second, char *result) {
  */
 void ModTwoNum(char *first, char *second, char *result) {
     uint32_t sum = 0;
-    uint32_t mod = atoi(second);
+    uint32_t mod = strtod(second, NULL);
     int32_t len = (int32_t) strnlen(first, MAX_LEN);
     for (int i = 0; i < len; ++i) {
         sum = (sum * 10 + (first[i] - '0')) % mod;
     }
-    itoa(sum, result, 10);
+    itoa((int32_t)sum, result, 10);
 }
 
 void Add(const DataCalc *param, char *result) {
@@ -391,15 +388,12 @@ void Mul(DataCalc *param, char *result) {
 
 
 void Div(DataCalc *param, char *result) {
-    uint32_t i, j, k;
-    uint32_t firstLen, secondLen;
-    char *first = param->first;
-    char *second = param->second;
+    uint32_t i;
     int flag1 = CHECK_SYMBOL(param->first);
     int flag2 = CHECK_SYMBOL(param->second);
     DivTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
     if (flag1 * flag2 < 0) {
-        for (i = strlen(result); i > 0; --i) {
+        for (i = strnlen(result, MAX_RES_LEN); i > 0; --i) {
             result[i] = result[i - 1];
         }
         result[0] = '-';
@@ -442,7 +436,7 @@ void CalculateMon(DataCalc *param, char *result) {
             Div(param, result);
             break;
         }
-            // 求模存在限制，模数位数不能大于6
+        // 求模存在限制，模数位数不能大于6
         case '%': {
             Mod(param, result);
             break;
@@ -468,7 +462,7 @@ int main() {
         memset(param.second, 0, MAX_LEN);
         memset(result, 0, MAX_RES_LEN);
         int resIndex;
-        for (int i = 0; i < strlen(input); i++) {
+        for (int i = 0; i < strnlen(input, MAX_IN_LEN); i++) {
             resIndex = 0;
             if (input[i] == '=') {
                 resIndex = i + 1;

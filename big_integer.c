@@ -1,58 +1,8 @@
 /**
  * 规则： 30位大数运算，其中求模最大位数6位
  */
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <stdbool.h>
-
-#define MAX_LEN 32
-#define MAX_RES_LEN (MAX_LEN << 1)
-#define MAX_IN_LEN (MAX_RES_LEN << 1)
-#define MOD_TWO_NUM_INTERVAL 4
-
-typedef struct {
-    char first[MAX_LEN];
-    char second[MAX_LEN];
-    char opr;
-} DataCalc;
-
-#define CHECK_SYMBOL(val) ((val)[0] == '-' ? -1 : 1)
-#define RM_SYMBOL(val) ((char *)(CHECK_SYMBOL(val) == -1 ? (val) + 1 : (val)))
-
-#define ASSERT(expr, log)                                                      \
-    do  {                                                                      \
-        if ((expr) > 0) {                                                      \
-            printf("%s [%s:%d]\n", log, __FUNCTION__, __LINE__);               \
-            exit(0);                                                           \
-        }                                                                      \
-    } while(0)
-
-/**
- * 返回是否是数字类型
- * @param ch 
- * @return 
- */
-bool IsDigit(char ch) {
-    if (ch < '0' || ch > '9') {
-        return false;
-    } else {
-        return true;
-    }
-}
-
-void Reverse(char *s) {
-    int32_t len = (int32_t) strlen(s);
-    int32_t i = 0;
-    char c;
-    while (i <= len / 2 - 1) {
-        c = s[i];
-        s[i] = s[len - 1 - i];
-        s[len - 1 - i] = c;
-        i++;
-    }
-}
+#include "include/big_integer.h"
+#include "include/arith_utils.h"
 
 /**
  * 比较两个自然数的最大值
@@ -83,44 +33,6 @@ int32_t GetStrMaxLen(const char *first, const char *second) {
     int32_t len1 = (int32_t) strnlen(first, MAX_LEN);
     int32_t len2 = (int32_t) strnlen(second, MAX_LEN);
     return len1 > len2 ? len1 : len2;
-}
-
-void ParseInput(const char *input, DataCalc *param) {
-    int32_t opNum = 0;
-    int32_t firstNumIdx = 0;
-    int32_t secondNumIdx = 0;
-    for (int32_t i = 0; i < strnlen(input, MAX_IN_LEN); i++) {
-        if (IsDigit(input[i])) {
-            ASSERT(opNum > 1, "TEST input err");
-            ASSERT((firstNumIdx > MAX_LEN - 1) || (secondNumIdx > MAX_LEN - 1), "TEST too long param");
-            if (opNum == 0) {
-                param->first[firstNumIdx++] = input[i];
-            }
-            if (opNum == 1) {
-                param->second[secondNumIdx++] = input[i];
-            }
-        } else if (input[i] == '-') {
-            ASSERT(firstNumIdx > 0 && secondNumIdx > 0 && opNum > 0, "TEST param err");
-            if (opNum == 0 && firstNumIdx > 0 && secondNumIdx == 0) {
-                opNum++;
-                param->opr = input[i];
-                continue;
-            }
-            ASSERT((firstNumIdx > MAX_LEN - 1) || (secondNumIdx > MAX_LEN - 1), "TEST too long param");
-            if (opNum == 0 && firstNumIdx == 0) {
-                param->first[firstNumIdx++] = input[i];
-            }
-            if (opNum == 1 && secondNumIdx == 0) {
-                param->second[secondNumIdx++] = input[i];
-            }
-        } else if (input[i] == '+' || input[i] == '*' || input[i] == '%' || input[i] == '/') {
-            ASSERT(firstNumIdx == 0 || opNum > 1, "TEST too many symbol");
-            opNum++;
-            param->opr = input[i];
-        } else {
-            ASSERT(true, "TEST invalid symbol");
-        }
-    }
 }
 
 /**
@@ -307,13 +219,13 @@ void ModTwoNum(char *first, char *second, char *result) {
     itoa((int32_t)sum, result, 10);
 }
 
-void Add(const DataCalc *param, char *result) {
-    int32_t flag1 = CHECK_SYMBOL(param->first);
-    int32_t flag2 = CHECK_SYMBOL(param->second);
+void Add(char *first, char *second, char *result) {
+    int32_t flag1 = CHECK_SYMBOL(first);
+    int32_t flag2 = CHECK_SYMBOL(second);
     if (flag1 == 1 && flag2 == 1) {
-        AddTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+        AddTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result);
     } else if (flag1 * flag2 < 0) {
-        int32_t max = CompNumStrSize(RM_SYMBOL(param->first), RM_SYMBOL(param->second));
+        int32_t max = CompNumStrSize(RM_SYMBOL(first), RM_SYMBOL(second));
         /**
          * -2 + 1
          *  2 + -1
@@ -323,62 +235,61 @@ void Add(const DataCalc *param, char *result) {
         if (max == 1) {
             if (flag1 < 0) {
                 result[0] = '-';
-                SubTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result + 1);
+                SubTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result + 1);
             } else {
-                SubTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+                SubTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result);
             }
 
         } else {
             if (flag2 < 0) {
                 result[0] = '-';
-                SubTwoNum(RM_SYMBOL(param->second), RM_SYMBOL(param->first), result + 1);
+                SubTwoNum(RM_SYMBOL(second), RM_SYMBOL(first), result + 1);
             } else {
-                SubTwoNum(RM_SYMBOL(param->second), RM_SYMBOL(param->first), result);
+                SubTwoNum(RM_SYMBOL(second), RM_SYMBOL(first), result);
             }
         }
 
     } else {
         result[0] = '-';
-        AddTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result + 1);
+        AddTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result + 1);
     }
 }
 
 
-void Sub(DataCalc *param, char *result) {
-    param->opr = '+';
-    int32_t flag2 = CHECK_SYMBOL(param->second);
-    int32_t len2 = (int32_t) strlen(param->second);
+void Sub(char *first, char *second, char *result) {
+    int32_t flag2 = CHECK_SYMBOL(second);
+    int32_t len2 = (int32_t) strlen(second);
     if (flag2 == -1) {
         for (int i = 0; i < len2; ++i) {
             if (i == len2 - 1) {
-                param->second[i] = '\0';
+                second[i] = '\0';
             } else {
-                param->second[i] = param->second[i + 1];
+                second[i] = second[i + 1];
             }
         }
     } else {
         for (int32_t i = len2; i >= 0; --i) {
             if (i == 0) {
-                param->second[i] = '-';
+                second[i] = '-';
             } else {
-                param->second[i] = param->second[i - 1];
+                second[i] = second[i - 1];
             }
         }
     }
-    Add(param, result);
+    Add(first, second, result);
 }
 
-void Mul(DataCalc *param, char *result) {
-    ASSERT(strcmp(param->second, "0") == 0, "TEST divisor cannot be zero");
-    ASSERT(strcmp(param->second, "-0") == 0, "TEST divisor cannot be zero");
+void Mul(char *first, char *second, char *result) {
+    ASSERT(strcmp(second, "0") == 0, "TEST divisor cannot be zero");
+    ASSERT(strcmp(second, "-0") == 0, "TEST divisor cannot be zero");
 
-    int32_t flag1 = CHECK_SYMBOL(param->first);
-    int32_t flag2 = CHECK_SYMBOL(param->second);
+    int32_t flag1 = CHECK_SYMBOL(first);
+    int32_t flag2 = CHECK_SYMBOL(second);
     if (flag1 * flag2 < 0) {
         result[0] = '-';
-        MulTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result + 1);
+        MulTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result + 1);
     } else {
-        MulTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+        MulTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result);
     }
     if (strcmp("-0", result) == 0) {
         result[0] = '0';
@@ -387,11 +298,11 @@ void Mul(DataCalc *param, char *result) {
 }
 
 
-void Div(DataCalc *param, char *result) {
+void Div(char *first, char *second, char *result) {
     uint32_t i;
-    int flag1 = CHECK_SYMBOL(param->first);
-    int flag2 = CHECK_SYMBOL(param->second);
-    DivTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+    int flag1 = CHECK_SYMBOL(first);
+    int flag2 = CHECK_SYMBOL(second);
+    DivTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result);
     if (flag1 * flag2 < 0) {
         for (i = strnlen(result, MAX_RES_LEN); i > 0; --i) {
             result[i] = result[i - 1];
@@ -401,86 +312,18 @@ void Div(DataCalc *param, char *result) {
 }
 
 //  (a + b) % p = (a % p + b % p) % p => a * b % p = (a % p) % p
-void Mod(DataCalc *param, char *result) {
-    int32_t flag1 = CHECK_SYMBOL(param->first);
-    int32_t flag2 = CHECK_SYMBOL(param->second);
+void Mod(char *first, char *second, char *result) {
+    int32_t flag1 = CHECK_SYMBOL(first);
+    int32_t flag2 = CHECK_SYMBOL(second);
     ASSERT(flag1 < 0 || flag2 < 0, "TEST param mod err");
-    ASSERT(strcmp(param->second, "0") == 0, "TEST second cannot be zero");
-    ASSERT(strcmp(param->second, "-0") == 0, "TEST second cannot be zero");
+    ASSERT(strcmp(second, "0") == 0, "TEST second cannot be zero");
+    ASSERT(strcmp(second, "-0") == 0, "TEST second cannot be zero");
     char maxIntStr[12] = {'\0'};
     itoa(INT_MAX, maxIntStr, 10);
-    if (CompNumStrSize(RM_SYMBOL(param->second), maxIntStr) < 0 &&
-    strlen(RM_SYMBOL(param->first)) - strlen(RM_SYMBOL(param->second)) < MOD_TWO_NUM_INTERVAL) {
-        ModTwoNum(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+    if (CompNumStrSize(RM_SYMBOL(second), maxIntStr) < 0 &&
+    strlen(RM_SYMBOL(first)) - strlen(RM_SYMBOL(second)) < MOD_TWO_NUM_INTERVAL) {
+        ModTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result);
     } else {
-        ModTwoNumV2(RM_SYMBOL(param->first), RM_SYMBOL(param->second), result);
+        ModTwoNumV2(RM_SYMBOL(first), RM_SYMBOL(second), result);
     }
-}
-
-/**
- * 大整数运算
- * @param param
- * @param result
- */
-void CalculateMon(DataCalc *param, char *result) {
-    switch (param->opr) {
-        case '+': {
-            Add(param, result);
-            break;
-        }
-        case '-': {
-            Sub(param, result);
-            break;
-        }
-        case '*': {
-            Div(param, result);
-            break;
-        }
-        // 求模存在限制，模数位数不能大于6
-        case '%': {
-            Mod(param, result);
-            break;
-        }
-            // 结果向零取整
-        case '/': {
-            Mul(param, result);
-            break;
-        }
-        default:
-            break;
-    }
-}
-int main() {
-    char result[MAX_RES_LEN] = {'\0'};
-    char input[MAX_IN_LEN] = {'\0'};
-    int32_t errCnt = 0;
-    int32_t passCnt = 0;
-    DataCalc param;
-    freopen("../testcase/sum.in", "r", stdin);
-    while (scanf("%s\n", input) != EOF) {
-        memset(param.first, 0, MAX_LEN);
-        memset(param.second, 0, MAX_LEN);
-        memset(result, 0, MAX_RES_LEN);
-        int resIndex;
-        for (int i = 0; i < strnlen(input, MAX_IN_LEN); i++) {
-            resIndex = 0;
-            if (input[i] == '=') {
-                resIndex = i + 1;
-                input[i] = '\0';
-            }
-        }
-        ParseInput(input, &param);
-        CalculateMon(&param, result);
-        if (strcmp(input + resIndex, result) != 0) {
-            printf("EXPECT[%s] %s = (res = %s, expect = %s)\n",
-                   strcmp(input + resIndex, result) == 0 ? "TRUE" : "FALSE",
-                   input, result, input + resIndex);
-            errCnt++;
-        } else {
-            passCnt++;
-        }
-        memset(input, 0, MAX_RES_LEN);
-    }
-    printf("EXPECT ALL TESTCASE PASS CNT (pass %d, err %d)\n", passCnt, errCnt);
-    return 0;
 }

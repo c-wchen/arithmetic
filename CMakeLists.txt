@@ -12,4 +12,4 @@ set(CMAKE_CXX_STANDARD 14)
 #endforeach ()
 
 include_directories(include)
-add_executable(${PROJECT_NAME} arith_main.c pre_input.c big_integer.c arith_utils.c)
+add_executable(${PROJECT_NAME} arith_main.c pre_input.c big_integer.c arith_utils.c big_decimal.c)

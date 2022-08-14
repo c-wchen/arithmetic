@@ -5,8 +5,13 @@
 #include "big_decimal.h"
 #include "big_integer.h"
 
-int32_t GetDecimalPointIndex(char *ch) {
-    int len = strlen(ch);
+/**
+ * 获取小数位数，没有小数位返回0
+ * @param ch
+ * @return
+ */
+int32_t GetDecimalPlaces(char *ch) {
+    int32_t len = (int32_t) strnlen(ch, MAX_LEN);
     for (int i = 0; i < len; ++i) {
         if (ch[i] == '.') {
             return len - 1 - i;
@@ -15,69 +20,16 @@ int32_t GetDecimalPointIndex(char *ch) {
     return 0;
 }
 
-void DelDecimalPoint(char *ch) {
-    int idx = GetDecimalPointIndex(ch);
-    int len = strlen(ch);
-    if (idx > 0) {
-        for (int i = len - 1 - idx; i < len; ++i) {
-            ch[i] = ch[i + 1];
-        }
-        ch[len - 1] = '\0';
-    }
-}
-
-void TruncateTailNum(char *ch, int32_t idx) {
-    int len = strlen(ch);
-    for (int i = idx; i < len; ++i) {
-        ch[i] = '\0';
-    }
-}
-
-void round(char *ch, int reversedBits) {
-    if (reversedBits < 0) {
-        return;
-    }
-    int len = strlen(ch);
-    int idx = GetDecimalPointIndex(ch);
-    if (reversedBits > idx) {
-        return;
-    }
-    int reversedPos = len - 1 - idx + reversedBits;
-
-    if (ch[reversedPos + 1] >= '5') {
-        if (ch[reversedPos] < '9') {
-            ch[reversedPos] = ch[reversedPos] + 1;
-            TruncateTailNum(ch, reversedPos + 1);
-        } else {
-            TruncateTailNum(ch, reversedPos + 1);
-            char result[MAX_RES_LEN] = {0};
-            char one[MAX_LEN] = {"0.0000001"};
-            if (CHECK_SYMBOL(ch)) {
-                AddDecimal(ch, one, result);
-            } else {
-                SubDecimal(ch, one, result);
-            }
-            memcpy_s(ch, MAX_LEN, result, MAX_LEN);
-        }
-    } else {
-        TruncateTailNum(ch, reversedPos + 1);
-    }
-    idx = GetDecimalPointIndex(ch);
-    len = strlen(ch);
-    if (idx < reversedBits) {
-        for (int i = 0; i < reversedBits - idx; ++i) {
-            ch[len + i] = '0';
-        }
-    }
-
-}
-
+/**
+ * 删除头部为零的数字
+ * @param ch
+ */
 void DelHeadZero(char *ch) {
-    int32_t len = strlen(ch);
+    int32_t len = (int32_t) strnlen(ch, MAX_LEN);
     int count = 0;
-    while (ch[count] != '\0' && ch[count] == '0') {
+    while (ch[count] == '0') {
         count++;
-    };
+    }
     if (count == 0) {
         return;
     }
@@ -90,8 +42,12 @@ void DelHeadZero(char *ch) {
     }
 }
 
+/**
+ * 删除尾部为零的数字
+ * @param ch
+ */
 void DelTailZero(char *ch) {
-    int len = strlen(ch);
+    int len = (int32_t) strnlen(ch, MAX_LEN);
     for (int i = len - 1; i >= 0; --i) {
         if (ch[i] == '0') {
             ch[i] = '\0';
@@ -101,8 +57,76 @@ void DelTailZero(char *ch) {
     }
 }
 
+/**
+ * 删除小数点
+ * @param ch
+ */
+void DelDecimalPoint(char *ch) {
+    int idx = GetDecimalPlaces(ch);
+    int32_t len = (int32_t) strnlen(ch, MAX_LEN);
+    if (idx > 0) {
+        for (int i = len - 1 - idx; i < len; ++i) {
+            ch[i] = ch[i + 1];
+        }
+        ch[len - 1] = '\0';
+    }
+    DelHeadZero(ch);
+}
+/**
+ * 切断字符串idx后面部分数字
+ * @param ch
+ * @param idx
+ */
+void TruncateTailNum(char *ch, int32_t idx) {
+    int32_t len = (int32_t) strnlen(ch, MAX_LEN);
+    for (int i = idx; i < len; ++i) {
+        ch[i] = '\0';
+    }
+}
+/**
+ * 保留reversedBits位小数
+ * @param ch
+ * @param reversedBits 保留位数
+ */
+void BigDecimalRound(char *ch, int reversedBits) {
+    int len = (int32_t) strnlen(ch, MAX_LEN);
+    int idx = GetDecimalPlaces(ch);
+    if (reversedBits < 0 || (len - idx) + reversedBits > MAX_LEN) {
+        return;
+    }
+    int reversedPos = len - 1 - idx + reversedBits;
+    if (idx > reversedBits && ch[reversedPos + 1] >= '5') {
+        if (ch[reversedPos] < '9') {
+            ch[reversedPos] = (char)(ch[reversedPos] + 1);
+        } else {
+            char result[MAX_RES_LEN] = {0};
+            char decimalOne[MAX_LEN] = {0};
+            for (int i = 0; i < reversedBits + 2; ++i) {
+                decimalOne[i] = '0';
+            }
+            decimalOne[1] = '.';
+            decimalOne[reversedBits + 1] = '1';
+            if (CHECK_SYMBOL(ch)) {
+                AddDecimal(ch, decimalOne, result);
+            } else {
+                SubDecimal(ch, decimalOne, result);
+            }
+            memcpy_s(ch, MAX_LEN, result, MAX_LEN);
+        }
+    }
+    TruncateTailNum(ch, reversedPos + 1);
+    idx = GetDecimalPlaces(ch);
+    len = (int32_t) strnlen(ch, MAX_LEN);
+    if (idx < reversedBits) {
+        for (int i = 0; i < reversedBits - idx; ++i) {
+            ch[len + i] = '0';
+        }
+    }
+}
+
+
 void RemoveRight(char *ch, int size, int grid) {
-    int len = strlen(ch);
+    int len = (int32_t) strnlen(ch, MAX_LEN);
     for (int i = 0; i < size; ++i) {
         if (i >= len) {
             break;
@@ -112,14 +136,12 @@ void RemoveRight(char *ch, int size, int grid) {
 }
 
 int32_t AlignTwoNumPadZero(char *first, char *second, bool isPadZero) {
-    int firstPointIdx = GetDecimalPointIndex(first);
-    int secondPointIdx = GetDecimalPointIndex(second);
+    int firstPointIdx = GetDecimalPlaces(first);
+    int secondPointIdx = GetDecimalPlaces(second);
     DelDecimalPoint(first);
     DelDecimalPoint(second);
-    DelHeadZero(first);
-    DelHeadZero(second);
-    int firstLen = strlen(first);
-    int secondLen = strlen(second);
+    int firstLen = (int32_t) strnlen(first, MAX_LEN);
+    int secondLen = (int32_t) strnlen(second, MAX_LEN);
     int zeroPadLen = firstPointIdx - secondPointIdx;
     if (isPadZero) {
         return firstPointIdx + secondPointIdx;
@@ -140,7 +162,7 @@ void ProcResult(char *result, int32_t rightLen) {
     if (rightLen == 0) {
         return;
     }
-    int resLen = strlen(result);
+    int resLen = (int32_t) strlen(result);
     if (rightLen < resLen) {
         RemoveRight(result, rightLen, 1);
         result[resLen - rightLen] = '.';
@@ -155,7 +177,6 @@ void ProcResult(char *result, int32_t rightLen) {
 }
 
 void AddDecimal(char *first, char *second, char *result) {
-
     int rightLen = AlignTwoNumPadZero(RM_SYMBOL(first), RM_SYMBOL(second), false);
     Add(first, second, result);
     ProcResult(RM_SYMBOL(result), rightLen);
@@ -174,11 +195,12 @@ void DivDecimal(char *first, char *second, char *result) {
 }
 
 void MulDecimal(char *first, char *second, char *result) {
-    if (strcmp("-5.5342", first) == 0) {
+    if (strcmp("7.43896408", first) == 0) {
         printf("test");
     }
     (void) AlignTwoNumPadZero(RM_SYMBOL(first), RM_SYMBOL(second), false);
     Mul(first, second, result);
+    // Mul返回零没有正负之分。
     if (CompNumStrSize(result, "0") == 0 && CHECK_SYMBOL(first) * CHECK_SYMBOL(second) < 0) {
         result[0] = '-';
         result[1] = '0';
@@ -186,7 +208,7 @@ void MulDecimal(char *first, char *second, char *result) {
     char tmpFirst[MAX_LEN] = {0};
     char modResult[MAX_RES_LEN] = {0};
     char mulResult[MAX_RES_LEN] = {0};
-    int idx = strlen(result);
+    int idx = (int32_t) strlen(result);
     bool flag = false;
     memcpy_s(tmpFirst, MAX_LEN, first, MAX_LEN);
     for (int i = 0; i < REVERSED_BITS + REVERSED_INTERVAL; ++i) {
@@ -210,6 +232,6 @@ void MulDecimal(char *first, char *second, char *result) {
         Mul(RM_SYMBOL(tmpFirst), RM_SYMBOL(second), mulResult);
         result[idx++] = mulResult[0];
     }
-    round(result, REVERSED_BITS);
+     BigDecimalRound(result, REVERSED_BITS);
 }
 

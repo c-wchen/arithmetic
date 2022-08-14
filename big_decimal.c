@@ -26,6 +26,52 @@ void DelDecimalPoint(char *ch) {
     }
 }
 
+void TruncateTailNum(char *ch, int32_t idx) {
+    int len = strlen(ch);
+    for (int i = idx; i < len; ++i) {
+        ch[i] = '\0';
+    }
+}
+
+void round(char *ch, int reversedBits) {
+    if (reversedBits < 0) {
+        return;
+    }
+    int len = strlen(ch);
+    int idx = GetDecimalPointIndex(ch);
+    if (reversedBits > idx) {
+        return;
+    }
+    int reversedPos = len - 1 - idx + reversedBits;
+
+    if (ch[reversedPos + 1] >= '5') {
+        if (ch[reversedPos] < '9') {
+            ch[reversedPos] = ch[reversedPos] + 1;
+            TruncateTailNum(ch, reversedPos + 1);
+        } else {
+            TruncateTailNum(ch, reversedPos + 1);
+            char result[MAX_RES_LEN] = {0};
+            char one[MAX_LEN] = {"0.0000001"};
+            if (CHECK_SYMBOL(ch)) {
+                AddDecimal(ch, one, result);
+            } else {
+                SubDecimal(ch, one, result);
+            }
+            memcpy_s(ch, MAX_LEN, result, MAX_LEN);
+        }
+    } else {
+        TruncateTailNum(ch, reversedPos + 1);
+    }
+    idx = GetDecimalPointIndex(ch);
+    len = strlen(ch);
+    if (idx < reversedBits) {
+        for (int i = 0; i < reversedBits - idx; ++i) {
+            ch[len + i] = '0';
+        }
+    }
+
+}
+
 void DelHeadZero(char *ch) {
     int32_t len = strlen(ch);
     int count = 0;
@@ -127,10 +173,8 @@ void DivDecimal(char *first, char *second, char *result) {
     ProcResult(RM_SYMBOL(result), rightLen);
 }
 
-#define REVERSE_BITS 7
-
 void MulDecimal(char *first, char *second, char *result) {
-    if (strcmp("7669.9246", first) == 0) {
+    if (strcmp("-5.5342", first) == 0) {
         printf("test");
     }
     (void) AlignTwoNumPadZero(RM_SYMBOL(first), RM_SYMBOL(second), false);
@@ -145,7 +189,7 @@ void MulDecimal(char *first, char *second, char *result) {
     int idx = strlen(result);
     bool flag = false;
     memcpy_s(tmpFirst, MAX_LEN, first, MAX_LEN);
-    for (int i = 0; i < REVERSE_BITS; ++i) {
+    for (int i = 0; i < REVERSED_BITS + REVERSED_INTERVAL; ++i) {
         if (i == 0) {
             result[idx++] = '.';
         }
@@ -166,5 +210,6 @@ void MulDecimal(char *first, char *second, char *result) {
         Mul(RM_SYMBOL(tmpFirst), RM_SYMBOL(second), mulResult);
         result[idx++] = mulResult[0];
     }
+    round(result, REVERSED_BITS);
 }
 

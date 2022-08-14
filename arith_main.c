@@ -9,7 +9,7 @@ int main() {
     int32_t errCnt = 0;
     int32_t passCnt = 0;
     DataCalc param;
-    freopen("../testcase/sum.in", "r", stdin);
+    freopen("../testcase/mul_decimal.in", "r", stdin);
     while (scanf("%s\n", input) != EOF) {
         memset(param.first, 0, MAX_LEN);
         memset(param.second, 0, MAX_LEN);
@@ -23,7 +23,7 @@ int main() {
             }
         }
         ParseInput(input, &param);
-        CalculateMon(&param, result);
+        CalculateMonDecimal(&param, result);
         if (strcmp(input + resIndex, result) != 0) {
             printf("EXPECT[%s] %s = (res = %s, expect = %s)\n",
                    strcmp(input + resIndex, result) == 0 ? "TRUE" : "FALSE",

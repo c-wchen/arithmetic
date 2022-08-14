@@ -17,4 +17,6 @@ void Sub(char *first, char *second, char *result);
 void Mul(char *first, char *second, char *result);
 void Div(char *first, char *second, char *result);
 void Mod(char *first, char *second, char *result);
+
+int CompNumStrSize(const char *first, const char *second);
 #endif //ARITHMETIC_BIG_INTEGER_H

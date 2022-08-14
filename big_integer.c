@@ -151,13 +151,13 @@ void DivTwoNum(char *first, char *second, char *result) {
 }
 
 void MulTwoNum(char *first, char *second, char *result) {
-    int len2 = (int32_t)strnlen(second, MAX_LEN);
+    int len2 = (int32_t) strnlen(second, MAX_LEN);
     char pow[MAX_LEN] = {'\0'};
     char result2[MAX_LEN] = {'\0'};
     char second2[MAX_LEN] = {'\0'};
     memcpy(result2, first, MAX_LEN);
     result[0] = '0';
-    int count = (int32_t)strnlen(first, MAX_LEN) - (int32_t)strnlen(second, MAX_LEN);
+    int count = (int32_t) strnlen(first, MAX_LEN) - (int32_t) strnlen(second, MAX_LEN);
     int num;
     while (count >= 0) {
         num = 0;
@@ -175,7 +175,7 @@ void MulTwoNum(char *first, char *second, char *result) {
         if (num == 0) {
             continue;
         }
-        pow[0] = (char)('0' + num);
+        pow[0] = (char) ('0' + num);
         AddPlus(result, pow);
     }
 }
@@ -189,8 +189,8 @@ void MulTwoNum(char *first, char *second, char *result) {
 void ModTwoNumV2(char *first, char *second, char *result) {
     memcpy(result, first, MAX_LEN);
     char second2[MAX_LEN] = {'\0'};
-    int count = (int32_t)strnlen(first, MAX_LEN) - (int32_t)strnlen(second, MAX_LEN);
-    int len2 = (int32_t)strnlen(second, MAX_LEN);
+    int count = (int32_t) strnlen(first, MAX_LEN) - (int32_t) strnlen(second, MAX_LEN);
+    int len2 = (int32_t) strnlen(second, MAX_LEN);
     while (count >= 0) {
         memcpy(second2, second, MAX_LEN);
         for (int i = 0; i < count; ++i) {
@@ -204,7 +204,7 @@ void ModTwoNumV2(char *first, char *second, char *result) {
 }
 
 /**
- * 满足条件： second位数 <= 6
+ * 满足条件： second位数 <= 6，容易发生溢出
  * @param first
  * @param second
  * @param result
@@ -216,7 +216,7 @@ void ModTwoNum(char *first, char *second, char *result) {
     for (int i = 0; i < len; ++i) {
         sum = (sum * 10 + (first[i] - '0')) % mod;
     }
-    itoa((int32_t)sum, result, 10);
+    itoa((int32_t) sum, result, 10);
 }
 
 void Add(char *first, char *second, char *result) {
@@ -318,10 +318,8 @@ void Mod(char *first, char *second, char *result) {
     ASSERT(flag1 < 0 || flag2 < 0, "TEST param mod err");
     ASSERT(strcmp(second, "0") == 0, "TEST second cannot be zero");
     ASSERT(strcmp(second, "-0") == 0, "TEST second cannot be zero");
-    char maxIntStr[12] = {'\0'};
-    itoa(INT_MAX, maxIntStr, 10);
-    if (CompNumStrSize(RM_SYMBOL(second), maxIntStr) < 0 &&
-    strlen(RM_SYMBOL(first)) - strlen(RM_SYMBOL(second)) < MOD_TWO_NUM_INTERVAL) {
+#define MOD_V1_SECOND_SIZE 7
+    if (strlen(second) <= MOD_V1_SECOND_SIZE) {
         ModTwoNum(RM_SYMBOL(first), RM_SYMBOL(second), result);
     } else {
         ModTwoNumV2(RM_SYMBOL(first), RM_SYMBOL(second), result);

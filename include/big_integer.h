@@ -7,7 +7,6 @@
 #define MAX_LEN 32
 #define MAX_RES_LEN (MAX_LEN << 1)
 #define MAX_IN_LEN (MAX_RES_LEN << 1)
-#define MOD_TWO_NUM_INTERVAL 4
 
 #define CHECK_SYMBOL(val) ((val)[0] == '-' ? -1 : 1)
 #define RM_SYMBOL(val) ((char *)(CHECK_SYMBOL(val) == -1 ? (val) + 1 : (val)))

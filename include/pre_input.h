@@ -5,6 +5,7 @@
 #ifndef ARITHMETIC_PRE_INPUT_H
 #define ARITHMETIC_PRE_INPUT_H
 #include "big_integer.h"
+#include "big_decimal.h"
 typedef struct {
     char first[MAX_LEN];
     char second[MAX_LEN];
@@ -12,6 +13,7 @@ typedef struct {
 } DataCalc;
 
 void CalculateMon(DataCalc *param, char *result);
+void CalculateMonDecimal(DataCalc *param, char *result);
 void ParseInput(const char *input, DataCalc *param);
 
 #endif //ARITHMETIC_PRE_INPUT_H

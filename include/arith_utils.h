@@ -17,6 +17,9 @@ do  {                                                                      \
     }                                                                      \
 } while(0)
 
+#define MAX(a, b) (a > b ? a : b)
+#define MIN(a, b) (a > b ? b : a)
+
 bool IsDigit(char ch);
 void Reverse(char *s);
 

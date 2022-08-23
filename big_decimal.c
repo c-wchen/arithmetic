@@ -72,8 +72,9 @@ void DelDecimalPoint(char *ch) {
     }
     DelHeadZero(ch);
 }
+
 /**
- * 切断字符串idx后面部分数字
+ * 截断字符串idx后面部分数字
  * @param ch
  * @param idx
  */
@@ -83,6 +84,7 @@ void TruncateTailNum(char *ch, int32_t idx) {
         ch[i] = '\0';
     }
 }
+
 /**
  * 保留reversedBits位小数
  * @param ch
@@ -97,7 +99,7 @@ void BigDecimalRound(char *ch, int reversedBits) {
     int reversedPos = len - 1 - idx + reversedBits;
     if (idx > reversedBits && ch[reversedPos + 1] >= '5') {
         if (ch[reversedPos] < '9') {
-            ch[reversedPos] = (char)(ch[reversedPos] + 1);
+            ch[reversedPos] = (char) (ch[reversedPos] + 1);
         } else {
             char result[MAX_RES_LEN] = {0};
             char decimalOne[MAX_LEN] = {0};
@@ -195,9 +197,6 @@ void DivDecimal(char *first, char *second, char *result) {
 }
 
 void MulDecimal(char *first, char *second, char *result) {
-    if (strcmp("7.43896408", first) == 0) {
-        printf("test");
-    }
     (void) AlignTwoNumPadZero(RM_SYMBOL(first), RM_SYMBOL(second), false);
     Mul(first, second, result);
     // Mul返回零没有正负之分。
@@ -232,6 +231,6 @@ void MulDecimal(char *first, char *second, char *result) {
         Mul(RM_SYMBOL(tmpFirst), RM_SYMBOL(second), mulResult);
         result[idx++] = mulResult[0];
     }
-     BigDecimalRound(result, REVERSED_BITS);
+    BigDecimalRound(result, REVERSED_BITS);
 }
 

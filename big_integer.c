@@ -297,7 +297,6 @@ void Mul(char *first, char *second, char *result) {
     }
 }
 
-
 void Div(char *first, char *second, char *result) {
     uint32_t i;
     int flag1 = CHECK_SYMBOL(first);
